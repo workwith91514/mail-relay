@@ -34,6 +34,6 @@ module.exports = async (req, res) => {
     if (!info.accepted || !info.accepted.length) return res.status(502).json({ ok: false, error: 'server did not accept the recipient', rejected: info.rejected });
     return res.status(200).json({ ok: true, messageId: info.messageId, accepted: info.accepted });
   } catch (e) {
-    return res.status(502).json({ ok: false, error: String(e && e.message || e).slice(0, 300), code: e && e.responseCode });
+    return res.status(502).json({ ok: false, error: String(e && e.message || e).slice(0, 300), code: e && e.responseCode, debug: { user: SMTP_USER, user_length: SMTP_USER.length, pass_length: SMTP_PASS.length, host: process.env.SMTP_HOST || 'smtp.hostinger.com', port } });
   }
 };
