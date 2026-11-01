@@ -20,7 +20,7 @@ module.exports = async (req, res) => {
   if (!EMAIL.test(to)) return res.status(400).json({ ok: false, error: 'to must be exactly one email address' });
   if (!subject || subject.length > 300 || /[\r\n]/.test(subject)) return res.status(400).json({ ok: false, error: 'bad subject' });
   if (!text.trim() || text.length > 20000) return res.status(400).json({ ok: false, error: 'bad text' });
-  if (addrOf(from) !== SMTP_USER.toLowerCase() || /[\r\n]/.test(from)) return res.status(400).json({ ok: false, error: 'from must be your own mailbox' });
+  if (addrOf(from) !== SMTP_USER.trim().toLowerCase() || /[\r\n]/.test(from)) return res.status(400).json({ ok: false, error: 'from must be your own mailbox', got: addrOf(from), expected: SMTP_USER.trim().toLowerCase() });
 
   const port = parseInt(process.env.SMTP_PORT || '465', 10);
   const transporter = nodemailer.createTransport({
