@@ -10,7 +10,7 @@ const EMAIL = /^[^\s@<>,;]+@[^\s@<>,;]+\.[^\s@<>,;]{2,}$/;
 module.exports = async (req, res) => {
   res.setHeader('Cache-Control', 'no-store');
   if (req.method !== 'POST') return res.status(405).json({ ok: false, error: 'POST only' });
-  const { RELAY_TOKEN, SMTP_USER, SMTP_PASS } = process.env;
+  const RELAY_TOKEN = process.env.RELAY_TOKEN, SMTP_USER = String(process.env.SMTP_USER || '').trim(), SMTP_PASS = String(process.env.SMTP_PASS || '').trim(); // trim: a stray space pasted into Vercel breaks the login
   if (!RELAY_TOKEN || !SMTP_USER || !SMTP_PASS) return res.status(500).json({ ok: false, error: 'Relay is not configured: set RELAY_TOKEN, SMTP_USER, SMTP_PASS in Vercel.' });
   if (!same(req.headers['x-relay-token'], RELAY_TOKEN)) return res.status(401).json({ ok: false, error: 'bad token' });
 
@@ -30,7 +30,10 @@ module.exports = async (req, res) => {
     connectionTimeout: 15000, greetingTimeout: 15000, socketTimeout: 25000
   });
   try {
-    const info = await transporter.sendMail({ from, to, subject, text });
+    const mail = { from, to, subject, text };
+    // buyers' mail clients can show an Unsubscribe link; the click sends a mail with subject 'unsubscribe' to our mailbox
+    if (b.unsubscribe === true || b.unsubscribe === 'true') mail.list = { unsubscribe: { url: 'mailto:' + SMTP_USER + '?subject=unsubscribe', comment: 'Unsubscribe' } };
+    const info = await transporter.sendMail(mail);
     if (!info.accepted || !info.accepted.length) return res.status(502).json({ ok: false, error: 'server did not accept the recipient', rejected: info.rejected });
     return res.status(200).json({ ok: true, messageId: info.messageId, accepted: info.accepted });
   } catch (e) {
