@@ -1,0 +1,4 @@
+{
+  "functions": { "api/send.js": { "maxDuration": 30 }, "api/unsubscribe.js": { "maxDuration": 30 } },
+  "rewrites": [ { "source": "/u", "destination": "/api/unsubscribe" } ]
+}
